@@ -1,0 +1,4 @@
+pandas==2.3.2
+nba-api==1.10.0
+pprintpp==0.4.0
+

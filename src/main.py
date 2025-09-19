@@ -5,7 +5,7 @@ import pprint
 
 def load_all_teams():
     df = pd.DataFrame(teams.get_teams())
-    file_path="C:/Users/enzoo/OneDrive/NBA_DATA/data/raw/data_all_teams.csv"
+    file_path="data/raw/data_all_teams.csv"
 
     df.to_csv(file_path, index = False)
 
@@ -14,14 +14,14 @@ def load_all_teams():
 def load_teams_statistics():
     standings = leaguestandings.LeagueStandings(season='2023-24').get_data_frames()[0]
 
-    file_path = "C:/Users/enzoo/OneDrive/NBA_DATA/data/raw/data_all_teams_23-24_season.csv"
+    file_path = "data/raw/data_all_teams_23-24_season.csv"
     standings.to_csv(file_path, index = False)
 
     print(f"Arquivos não limpos das estatísticas gerais dos times salvos com sucesso em: {file_path}")
 
 
 def load_clean_teams_statistics():
-    standings = pd.read_csv("C:/Users/enzoo/OneDrive/NBA_DATA/data/raw/data_all_teams_23-24_season.csv")
+    standings = pd.read_csv("data/raw/data_all_teams_23-24_season.csv")
 
     performance_standings = pd.DataFrame()
     performance_standings = standings[
@@ -36,7 +36,7 @@ def load_clean_teams_statistics():
 
     clean_standings = pd.concat([reference_standings, performance_standings], axis=1)
 
-    file_path = "C:/Users/enzoo/OneDrive/NBA_DATA/data/processed/data_all_teams_23-24_season.csv"
+    file_path = "data/processed/data_all_teams_23-24_season.csv"
 
     clean_standings.to_csv(file_path, index=False)
     print(f"Arquivos limpos das estatísticas dos times salvos com sucesso em: {file_path}")

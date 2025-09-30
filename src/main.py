@@ -1,7 +1,6 @@
 import pandas as pd
 from nba_api.stats.static import teams
 from nba_api.stats.endpoints import leaguestandings
-import pprint
 
 def load_all_teams():
     df = pd.DataFrame(teams.get_teams())
@@ -35,6 +34,8 @@ def load_clean_teams_statistics():
         ['LeagueID', 'SeasonID', 'TeamID', 'TeamCity', 'TeamName', 'Conference', 'Division']]
 
     clean_standings = pd.concat([reference_standings, performance_standings], axis=1)
+
+    # clean_standings = clean_standings.astype(str).apply(lambda col: col.map(lambda x: f'"{x}"'))
 
     file_path = "data/processed/data_all_teams_23-24_season.csv"
 

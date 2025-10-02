@@ -16,9 +16,11 @@ O projeto está em desenvolvimento e atualmente foca na temporada 2023-24 da NBA
 
 ```
 NBA_data/
+├── app.py
 │
-├── tests/          # Arquivos do Google Colab para testes
+├── pages/
 │   ├── front.py
+├── tests/          # Arquivos do Google Colab para testes
 │   ├── NBA_colab.ipynb
 ├── data/                # Dados do projeto
 │   ├── raw/            # Dados brutos da API

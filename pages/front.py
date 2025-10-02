@@ -38,12 +38,14 @@ df = pd.read_csv("data/processed/data_all_teams_23-24_season.csv")
 # ========================
 # Seleção do time
 # ========================
-team = st.selectbox("Selecione um time:", df["TeamName"].unique())
-team_data = df[df["TeamName"] == team].iloc[0]
+st.set_page_config(page_title="📊 Dashboard NBA 23/24", layout="wide")
 
-# Layout da página
-st.set_page_config(layout="wide")
-st.title("📊 Dashboard NBA 23/24")
+if "selected_team" not in st.session_state:
+    st.warning("Nenhum time selecionado. Volte para a Home e escolha um time.")
+    st.stop()
+
+team = st.session_state["selected_team"]
+team_data = df[df["TeamName"] == team].iloc[0]
 
 # Texto introdutório
 st.markdown(f"""
@@ -283,3 +285,7 @@ fig_divisions.update_layout(
 )
 
 st.plotly_chart(fig_divisions, use_container_width=True)
+
+
+if st.button("⬅️ Voltar para Home"):
+    st.switch_page("app.py")

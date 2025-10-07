@@ -4,7 +4,7 @@ Este projeto tem como objetivo coletar, processar e analisar dados da NBA atrav�
 
 ## 📋 Sobre o Projeto
 
-O projeto está em desenvolvimento e atualmente foca na temporada 2023-24 da NBA. O objetivo final é criar um pipeline completo que inclui:
+O projeto está em desenvolvimento e atualmente foca nas temporadas de 2010 até 2024 da NBA. O objetivo final é criar um pipeline completo que inclui:
 
 - Extração de dados da API não oficial da NBA sobre cada time
 - Armazenamento dos dados em nuvem
@@ -42,18 +42,22 @@ NBA_data/
    ```bash
    pip install -r requirements.txt
    ```
-4. Execute o projeto:
+4. Extraia os dados da NBA:
    ```bash
    python src/main.py
+   ```
+5. Execute a análise e visualize os dados no dashboard:
+   ```bash
+   streamlit run app.py
    ```
 
 ## 📊 Funcionalidades Atuais
 
 - [x] Conexão com a API da NBA
-- [x] Extração de dados dos times da temporada 2023-24
+- [x] Extração de dados dos times da temporada 2010-2024
 - [x] Estrutura inicial para processamento de dados
 - [ ] Upload para armazenamento em nuvem
-- [ ] Análise visual dos dados
+- [x] Dashboard interativo com gráficos e estatísticas
 - [ ] Modelos preditivos de machine learning
 
 ## 🔮 Próximos Passos
@@ -61,8 +65,7 @@ NBA_data/
 - Implementar pipeline completo de ETL
 - Adicionar visualizações de dados
 - Desenvolver modelos preditivos
-- Expandir para múltiplas temporadas
-- Implementar dashboard interativo
+- Expandir análises históricas e insights avançados
 
 ## 🤝 Contribuição
 

@@ -1,31 +1,48 @@
 import streamlit as st
+import pandas as pd
+import altair as alt
 
+# Configuração inicial
+st.set_page_config(page_title="🏀 Dashboard NBA", layout="wide")
+st.title("🏀 Dashboard NBA")
+
+# Estilo customizado
 st.markdown(
     """
     <style>
-    /* Reduz a largura da sidebar */
     [data-testid="stSidebar"][aria-expanded="true"] {
         width: 200px;
     }
     [data-testid="stSidebar"][aria-expanded="false"] {
         width: 60px;
     }
-
-    /* Ajusta o conteúdo dentro da sidebar */
-    .css-1d391kg {  /* classe interna do Streamlit (pode mudar) */
-        padding-left: 10px;
-        padding-right: 10px;
-    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Configuração inicial
-st.set_page_config(page_title="🏀 Dashboard NBA", layout="wide")
-st.title("🏀 Dashboard NBA 23/24 - Home")
+# --- CARREGAMENTO DOS DADOS ---
+# (ajuste o caminho conforme seu projeto)
+@st.cache_data
+def carregar_dados():
+    try:
+        df = pd.read_csv("data/processed/data_all_teams_all_seasons.csv")  # arquivo unificado
+        return df
+    except FileNotFoundError:
+        st.error("Arquivo 'data_all_teams.csv' não encontrado!")
+        return None
 
-# Logos oficiais (CDN da NBA)
+df = carregar_dados()
+
+# --- DEFINIÇÃO DAS ABAS ---
+aba_home, aba_melhores, aba_evolucao, aba_ranking = st.tabs([
+    "🏠 Home",
+    "🏆 Melhores Times por Temporada",
+    "📈 Evolução de Desempenho",
+    "📊 Ranking Geral"
+])
+
+# Dicionário de logos (mantém o seu original)
 team_logos = {
     "Celtics": "https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg",
     "Thunder": "https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg",
@@ -59,21 +76,80 @@ team_logos = {
     "Pistons": "https://cdn.nba.com/logos/nba/1610612765/primary/L/logo.svg",
 }
 
-# Lista de times
 teams = list(team_logos.keys())
 
-st.markdown("""
-Bem-vindo ao **Dashboard NBA 23/24**! 📊  
+# --- ABA HOME ---
+with aba_home:
+    st.markdown("""
+    Bem-vindo ao **Dashboard NBA**! 📊  
 
-Aqui você pode explorar estatísticas detalhadas de cada time da temporada.  
-Selecione um time abaixo para abrir a página de estatísticas.
-""")
+    Explore estatísticas, rankings e evolução dos times ao longo dos anos.  
+    Selecione um time abaixo para visualizar sua página individual.
+    """)
+    cols = st.columns(5)
+    for i, team in enumerate(teams):
+        with cols[i % 5]:
+            st.image(team_logos[team], width=80)
+            if st.button(team):
+                st.session_state["selected_team"] = team
+                st.switch_page("pages/front.py")
 
-# Grid de times
-cols = st.columns(5)
-for i, team in enumerate(teams):
-    with cols[i % 5]:
-        st.image(team_logos[team], width=80)
-        if st.button(team):
-            st.session_state["selected_team"] = team
-            st.switch_page("pages/front.py")  # 🔥 redireciona para front.py
+# --- ABA MELHORES TIMES POR TEMPORADA ---
+with aba_melhores:
+    if df is not None:
+        st.subheader("🏆 Melhor Time por Temporada")
+
+        if "SeasonID" in df.columns and "WINS" in df.columns:
+            # Seleciona o time com mais vitórias em cada temporada
+            melhores = df.loc[df.groupby("SeasonID")["WINS"].idxmax()]
+
+            for _, row in melhores.iterrows():
+                col1, col2 = st.columns([1, 4])
+                with col1:
+                    # Exibe o logo do time, se existir no dicionário
+                    st.image(team_logos.get(row["TeamName"], ""), width=80)
+                with col2:
+                    st.markdown(
+                        f"### {row['TeamCity']} {row['TeamName']} ({row['SeasonID']}) — {row['WINS']} vitórias"
+                    )
+
+# --- ABA EVOLUÇÃO DE DESEMPENHO ---
+with aba_evolucao:
+    if df is not None:
+        st.subheader("📈 Evolução de Desempenho por Time")
+
+        time_sel = st.selectbox("Selecione o time:", teams)
+        df_time = df[df["TeamName"] == time_sel].copy()
+
+        if not df_time.empty:
+            # Criar coluna com apenas o ano (opcional)
+            df_time.loc[:, "Season"] = df_time["SeasonID"].astype(str).str[-4:]
+
+            chart = alt.Chart(df_time).mark_line(point=True, color="#EC0A36").encode(
+                x=alt.X("Season:O", title="Temporada"),
+                y=alt.Y("WinPCT:Q", title="Win %"),
+                tooltip=["Season", "WinPCT"]
+            ).properties(width=700, height=400)
+
+            st.altair_chart(chart, use_container_width=True)
+        else:
+            st.info("Nenhum dado disponível para este time.")
+
+# --- ABA RANKING GERAL ---
+with aba_ranking:
+    if df is not None:
+        st.subheader("📊 Ranking Geral (por vitórias totais)")
+
+        # Agrupar por nome do time e somar as vitórias
+        ranking = (
+            df.groupby("TeamName")["WINS"]
+            .sum()
+            .reset_index()
+            .sort_values(by="WINS", ascending=False)
+        )
+
+        # Exibir tabela
+        st.dataframe(ranking, width='stretch')
+
+        # Exibir gráfico de barras
+        st.bar_chart(ranking.set_index("TeamName")["WINS"])

@@ -32,26 +32,54 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# Carrega o dataframe
-df = pd.read_csv("data/processed/data_all_teams_23-24_season.csv")
+# ========================
+# Configuração inicial
+# ========================
+st.set_page_config(page_title="📊 Dashboard NBA", layout="wide")
 
 # ========================
-# Seleção do time
+# Carrega o dataframe completo
 # ========================
-st.set_page_config(page_title="📊 Dashboard NBA 23/24", layout="wide")
+df = pd.read_csv("data/processed/data_all_teams_all_seasons.csv")
 
+# Converte SeasonID para ano (ex: 22024 -> 2024)
+df["Year"] = df["SeasonID"].astype(str).str[-4:]
+
+# ========================
+# Verifica seleção de time
+# ========================
 if "selected_team" not in st.session_state:
     st.warning("Nenhum time selecionado. Volte para a Home e escolha um time.")
     st.stop()
 
 team = st.session_state["selected_team"]
-team_data = df[df["TeamName"] == team].iloc[0]
 
-# Texto introdutório
+# ========================
+# Seleção da temporada
+# ========================
+# Pega a última season disponível automaticamente
+latest_year = df["Year"].max()
+
+# Cria o seletor de temporada na barra lateral
+selected_year = st.sidebar.selectbox(
+    "📅 Escolha a temporada",
+    sorted(df["Year"].unique(), reverse=True),
+    index=list(sorted(df["Year"].unique(), reverse=True)).index(latest_year)
+)
+
+# Filtra dados da temporada escolhida
+df_selected = df[df["Year"] == selected_year]
+
+# Filtra dados do time escolhido
+team_data = df_selected[df_selected["TeamName"] == team].iloc[0]
+
+# ========================
+# Exibição das informações
+# ========================
 st.markdown(f"""
-Bem-vindo ao **Dashboard NBA 23/24**! 🏀
+## 🏀 Dashboard NBA {selected_year}
 
-Esta página apresenta **estatísticas detalhadas dos jogos de uma temporada** da NBA, incluindo desempenho geral, confrontos por divisão, vitórias e derrotas em diferentes situações de jogo, e análise mês a mês.
+Esta página apresenta **estatísticas detalhadas dos jogos da temporada {selected_year}** da NBA, incluindo desempenho geral, confrontos por divisão, vitórias e derrotas em diferentes situações de jogo, e análise mês a mês.
 
 ### Informações do time selecionado
 - **Time:** {team_data['TeamCity']} {team_data['TeamName']}
@@ -59,9 +87,8 @@ Esta página apresenta **estatísticas detalhadas dos jogos de uma temporada** d
 - **Conferência:** {team_data['Conference']}
 - **Vitórias na temporada:** {team_data['WINS']}
 - **Derrotas na temporada:** {team_data['LOSSES']}
-- **Win %:** {team_data['WinPCT']*100:.1f}%
+- **Win %:** {team_data['WinPCT'] * 100:.1f}%
 """)
-
 
 
 # ========================
@@ -82,6 +109,36 @@ fig = px.pie(
     color_discrete_sequence=["#EC0A36", "#F0A500"]
 )
 st.plotly_chart(fig, use_container_width=True)
+
+
+# ========================
+# Evolução do desempenho por temporada
+# ========================
+st.subheader("📈 Evolução do desempenho (Win%) por temporada")
+
+# Filtra todas as seasons do time
+team_history = df[df["TeamName"] == team].copy()
+
+# Garante que os anos fiquem em ordem
+team_history["Year"] = team_history["Year"].astype(int)
+team_history = team_history.sort_values("Year")
+
+# Cria o gráfico de linha com Plotly
+fig_line = px.line(
+    team_history,
+    x="Year",
+    y="WinPCT",
+    markers=True,
+    title=f"Evolução da taxa de vitórias ({team})",
+    labels={"Year": "Temporada", "WinPCT": "Taxa de vitórias"},
+)
+
+# Ajusta layout e estilo
+fig_line.update_traces(line_color="#EC0A36", line_width=3)
+fig_line.update_layout(yaxis_tickformat=".0%", xaxis=dict(dtick=1))
+
+# Mostra o gráfico
+st.plotly_chart(fig_line, use_container_width=True)
 
 # ========================
 # Desempenho em casa e fora

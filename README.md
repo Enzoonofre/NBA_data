@@ -16,9 +16,9 @@ O projeto está em desenvolvimento e atualmente foca na temporada 2023-24 da NBA
 
 ```
 NBA_data/
-├── app.py
+├── app.py          # Página Home dos dados
 │
-├── pages/
+├── pages/          # Páginas web para analise de dados
 │   ├── front.py
 ├── tests/          # Arquivos do Google Colab para testes
 │   ├── NBA_colab.ipynb
@@ -26,7 +26,7 @@ NBA_data/
 │   ├── raw/            # Dados brutos da API
 │   └── processed/      # Dados processados
 ├── src/                # Código fonte em Python
-│   └── main.py         # Arquivo principal
+│   └── main.py         # Arquivo principal para extração dos dados
 ├── .gitignore          # Arquivo para ignorar variáveis de ambiente e arquivos da IDE
 └── requirements.txt    # Dependências do projeto
 ```
